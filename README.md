@@ -1,2 +1,2 @@
-# flat-rx
-reactive application model experiment
+# hold
+Communicate between containers using individual execution threads. 
