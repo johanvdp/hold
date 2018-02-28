@@ -7,11 +7,11 @@ import java.util.concurrent.TimeUnit;
 
 import nl.jvdploeg.context.Context;
 import nl.jvdploeg.hold.Command;
-import nl.jvdploeg.hold.Container;
 import nl.jvdploeg.hold.Facilities;
 import nl.jvdploeg.hold.HasExecutor;
+import nl.jvdploeg.hold.Id;
 
-public final class Scenario implements Container, HasExecutor {
+public final class Scenario implements Id<Scenario>, HasExecutor {
 
   public enum State {
     STARTED, WAITING_FOR_INPUT, ENDED;

@@ -14,14 +14,14 @@ import javax.swing.border.TitledBorder;
 
 import nl.jvdploeg.context.Context;
 import nl.jvdploeg.hold.Command;
-import nl.jvdploeg.hold.Container;
 import nl.jvdploeg.hold.Facilities;
 import nl.jvdploeg.hold.HasExecutor;
+import nl.jvdploeg.hold.Id;
 import nl.jvdploeg.hold.Service;
 
 @Service(type = RequestInputService.class)
 @Service(type = InputService.class)
-public final class UserInterfacePanel extends JPanel implements Container, HasExecutor, RequestInputService, InputService {
+public final class UserInterfacePanel extends JPanel implements Id<UserInterfacePanel>, HasExecutor, RequestInputService, InputService {
 
   private static final long serialVersionUID = 1L;
 
@@ -32,7 +32,7 @@ public final class UserInterfacePanel extends JPanel implements Container, HasEx
   private JTextField enteredText;
   private JTextField receivedText;
 
-  private InputService target;
+  private Id<? extends InputService> target;
 
   public UserInterfacePanel(final String id, final Executor executor) {
     this.id = id;
@@ -131,7 +131,7 @@ public final class UserInterfacePanel extends JPanel implements Container, HasEx
   }
 
   @Override
-  public void requestInput(final InputService theTarget) {
+  public void requestInput(final Id<? extends InputService> theTarget) {
     target = theTarget;
     SwingUtilities.invokeLater(() -> {
       sendButton.setEnabled(true);

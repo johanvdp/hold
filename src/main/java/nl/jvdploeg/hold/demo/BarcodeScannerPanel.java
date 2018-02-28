@@ -14,13 +14,13 @@ import javax.swing.border.TitledBorder;
 
 import nl.jvdploeg.context.Context;
 import nl.jvdploeg.hold.Command;
-import nl.jvdploeg.hold.Container;
 import nl.jvdploeg.hold.Facilities;
 import nl.jvdploeg.hold.HasExecutor;
+import nl.jvdploeg.hold.Id;
 import nl.jvdploeg.hold.Service;
 
 @Service(type = RequestInputService.class)
-public final class BarcodeScannerPanel extends JPanel implements Container, HasExecutor, RequestInputService {
+public final class BarcodeScannerPanel extends JPanel implements Id<BarcodeScannerPanel>, HasExecutor, RequestInputService {
 
   private static final long serialVersionUID = 1L;
 
@@ -29,7 +29,7 @@ public final class BarcodeScannerPanel extends JPanel implements Container, HasE
   private JTextField inputText;
   private JButton sendButton;
 
-  private InputService target;
+  private Id<? extends InputService> target;
 
   public BarcodeScannerPanel(final String id, final Executor executor) {
     this.id = id;
@@ -89,7 +89,7 @@ public final class BarcodeScannerPanel extends JPanel implements Container, HasE
   }
 
   @Override
-  public void requestInput(final InputService theTarget) {
+  public void requestInput(final Id<? extends InputService> theTarget) {
     target = theTarget;
     SwingUtilities.invokeLater(() -> {
       sendButton.setEnabled(true);

@@ -55,7 +55,7 @@ public class TestContainerTest extends FacilitiesContextTest {
   public void testSendWithDelay() throws Exception {
     // given
     // when
-    final Future<?> result = getFacilities().send(container, c -> c.touch(), 20, TimeUnit.MILLISECONDS);
+    final Future<?> result = getFacilities().send(container, (Command<TestContainer>) c -> c.touch(), 20, TimeUnit.MILLISECONDS);
     // then
     Assert.assertNull(container.getLastTouchedBy());
     result.get();

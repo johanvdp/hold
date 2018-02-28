@@ -16,16 +16,16 @@ import nl.jvdploeg.exception.IllegalStateExceptionBuilder;
  */
 public final class Memory implements Hold {
 
-  /** {@link Container}s by container id. */
-  private final Map<String, Container> containers = new HashMap<>();
-  /** {@link Container}s by {@link Service} type. */
-  private final Map<Class<?>, List<Container>> services = new HashMap<>();
+  /** {@link Id}s by container id. */
+  private final Map<String, Id<?>> containers = new HashMap<>();
+  /** {@link Id}s by {@link Service} type. */
+  private final Map<Class<?>, List<Id<?>>> services = new HashMap<>();
 
   public Memory() {
   }
 
   @Override
-  public synchronized void add(final Container container) {
+  public synchronized void add(final Id<?> container) {
     Checks.ARGUMENT.notNull(container, "container");
     addContainer(container);
     addServices(container);
@@ -33,7 +33,7 @@ public final class Memory implements Hold {
 
   @SuppressWarnings("unchecked")
   @Override
-  public synchronized <T extends Container> T getContainer(final String containerId) {
+  public synchronized <T extends Id<?>> T getContainer(final String containerId) {
     Checks.ARGUMENT.notNull(containerId, "containerId");
     final T container = (T) containers.get(containerId);
     if (container == null) {
@@ -48,7 +48,7 @@ public final class Memory implements Hold {
 
   @SuppressWarnings("unchecked")
   @Override
-  public synchronized <T extends Container> List<T> getContainers(final Class<?> serviceType) {
+  public synchronized <T extends Id<?>> List<T> getContainers(final Class<?> serviceType) {
     Checks.ARGUMENT.notNull(serviceType, "serviceType");
     final List<T> list = (List<T>) services.get(serviceType);
     if (list == null) {
@@ -64,14 +64,14 @@ public final class Memory implements Hold {
 
   @SuppressWarnings("unchecked")
   @Override
-  public synchronized <T extends Container> T remove(final String id) {
+  public synchronized <T extends Id<?>> T remove(final String id) {
     Checks.ARGUMENT.notNull(id, "id");
     final T container = (T) removeContainer(id);
     removeServices(container);
     return container;
   }
 
-  private void addContainer(final Container container) {
+  private void addContainer(final Id<?> container) {
     Checks.ARGUMENT.notNull(container, "container");
     final String id = container.getId();
     Checks.ARGUMENT.notNull(id, "container.id");
@@ -85,11 +85,11 @@ public final class Memory implements Hold {
     containers.put(id, container);
   }
 
-  private void addServices(final Container container) {
+  private void addServices(final Id<?> container) {
     final Service[] serviceAnnotations = getServices(container);
     for (final Service serviceAnnotation : serviceAnnotations) {
       final Class<?> serviceClass = serviceAnnotation.type();
-      List<Container> list = services.get(serviceClass);
+      List<Id<?>> list = services.get(serviceClass);
       if (list == null) {
         list = new ArrayList<>();
         services.put(serviceClass, list);
@@ -98,13 +98,13 @@ public final class Memory implements Hold {
     }
   }
 
-  private Service[] getServices(final Container container) {
+  private Service[] getServices(final Id<?> container) {
     final Service[] list = container.getClass().getAnnotationsByType(Service.class);
     return list;
   }
 
-  private Container removeContainer(final String id) {
-    final Container container = containers.remove(id);
+  private Id<?> removeContainer(final String id) {
+    final Id<?> container = containers.remove(id);
     if (container == null) {
       throw new IllegalStateExceptionBuilder() //
           .method("removeContainer") //
@@ -115,11 +115,11 @@ public final class Memory implements Hold {
     return container;
   }
 
-  private void removeServices(final Container container) {
+  private void removeServices(final Id<?> container) {
     final Service[] serviceAnnotations = getServices(container);
     for (final Service serviceAnnotation : serviceAnnotations) {
       final Class<?> serviceType = serviceAnnotation.type();
-      final List<Container> list = services.get(serviceType);
+      final List<Id<?>> list = services.get(serviceType);
       final boolean removed = list.remove(container);
       if (!removed) {
         throw new IllegalStateExceptionBuilder() //

@@ -30,10 +30,10 @@ public final class FacilitiesContext extends Context<Facilities> implements Faci
     }
   }
 
-  /** Executor for {@link Container}s without {@link HasExecutor}. */
+  /** Executor for {@link Id}s without {@link HasExecutor}. */
   private Executor defaultExecutor;
 
-  /** Hold {@link Container}s by id. */
+  /** Hold {@link Id}s by id. */
   private Hold hold;
 
   public FacilitiesContext() {
@@ -45,9 +45,10 @@ public final class FacilitiesContext extends Context<Facilities> implements Faci
   }
 
   @Override
-  public <T, U extends T> CompletableFuture<Void> send(final U container, final Command<T> command) {
-    Checks.ARGUMENT.notNull(container, "container");
+  public <T, U extends T> CompletableFuture<Void> send(final Id<U> id, final Command<T> command) {
+    Checks.ARGUMENT.notNull(id, "id");
     Checks.ARGUMENT.notNull(command, "command");
+    final U container = hold.getContainer(id.getId());
     final Executor executor = getExecutor(container);
     final RunnableCommand<T> runnableCommand = new RunnableCommand<>(container, command);
     final CompletableFuture<Void> future = CompletableFuture.runAsync(runnableCommand, executor);
@@ -55,11 +56,12 @@ public final class FacilitiesContext extends Context<Facilities> implements Faci
   }
 
   @Override
-  public <T, U extends T> CompletableFuture<Void> send(final U container, final Command<T> command, final long delay, final TimeUnit unit) {
-    Checks.ARGUMENT.notNull(container, "container");
+  public <T, U extends T> CompletableFuture<Void> send(final Id<U> id, final Command<T> command, final long delay, final TimeUnit unit) {
+    Checks.ARGUMENT.notNull(id, "id");
     Checks.ARGUMENT.notNull(command, "command");
     Checks.ARGUMENT.ge(Long.valueOf(delay), "delay", Long.valueOf(0L));
     Checks.ARGUMENT.notNull(unit, "unit");
+    final U container = hold.getContainer(id.getId());
     final Executor executor = getExecutor(container);
     final RunnableCommand<T> runnableCommand = new RunnableCommand<>(container, command);
     final CompletableFuture<Void> future = CompletableFuture.runAsync(runnableCommand, CompletableFuture.delayedExecutor(delay, unit, executor));
@@ -70,11 +72,11 @@ public final class FacilitiesContext extends Context<Facilities> implements Faci
   public <T> CompletableFuture<Void> sendAll(final Class<T> serviceType, final Command<T> command) {
     Checks.ARGUMENT.notNull(serviceType, "serviceType");
     Checks.ARGUMENT.notNull(command, "command");
-    final List<Container> containers = hold.getContainers(serviceType);
+    final List<Id> containers = hold.getContainers(serviceType);
     final List<CompletableFuture<Void>> futures = new ArrayList<>();
-    for (final Container container : containers) {
+    for (final Id container : containers) {
       final Executor executor = getExecutor(container);
-      final RunnableCommand<Container> runnableCommand = new RunnableCommand<>(container, command);
+      final RunnableCommand<Id> runnableCommand = new RunnableCommand<>(container, command);
       futures.add(CompletableFuture.runAsync(runnableCommand, executor));
     }
     final CompletableFuture<?>[] futuresArray = futures.toArray(new CompletableFuture<?>[futures.size()]);
@@ -88,11 +90,11 @@ public final class FacilitiesContext extends Context<Facilities> implements Faci
     Checks.ARGUMENT.notNull(command, "command");
     Checks.ARGUMENT.ge(Long.valueOf(delay), "delay", Long.valueOf(0L));
     Checks.ARGUMENT.notNull(unit, "unit");
-    final List<Container> containers = hold.getContainers(serviceType);
+    final List<Id> containers = hold.getContainers(serviceType);
     final List<CompletableFuture<Void>> futures = new ArrayList<>();
-    for (final Container container : containers) {
+    for (final Id container : containers) {
       final Executor executor = getExecutor(container);
-      final RunnableCommand<Container> runnableCommand = new RunnableCommand<>(container, command);
+      final RunnableCommand<Id> runnableCommand = new RunnableCommand<>(container, command);
       futures.add(CompletableFuture.runAsync(runnableCommand, CompletableFuture.delayedExecutor(delay, unit, executor)));
     }
     final CompletableFuture<?>[] futuresArray = futures.toArray(new CompletableFuture<?>[futures.size()]);

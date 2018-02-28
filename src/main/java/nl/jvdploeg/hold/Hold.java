@@ -3,18 +3,18 @@ package nl.jvdploeg.hold;
 
 import java.util.List;
 
-/** Hold containing {@link Container}s. */
+/** Hold containing {@link Id}s. */
 public interface Hold {
 
-  /** Add {@link Container}. */
-  void add(Container container);
+  /** Add {@link Id}. */
+  void add(Id<?> container);
 
-  /** Get {@link Container} by container id. */
-  <T extends Container> T getContainer(String containerId);
+  /** Get {@link Id} by container id. */
+  <T extends Id<?>> T getContainer(String containerId);
 
-  /** Get {@link Container}s that implement a {@link Service} type. */
-  <T extends Container> List<T> getContainers(Class<?> serviceType);
+  /** Get {@link Id}s that implement a {@link Service} type. */
+  <T extends Id<?>> List<T> getContainers(Class<?> serviceType);
 
-  /** Remove {@link Container} by container id. */
-  <T extends Container> T remove(String id);
+  /** Remove {@link Id} by container id. */
+  <T extends Id<?>> T remove(String id);
 }

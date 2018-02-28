@@ -1,7 +1,7 @@
 package nl.jvdploeg.hold;
 
 @Service(type = Sensor.class)
-public class TestContainer implements Container, Sensor {
+public class TestContainer implements Id<TestContainer>, Sensor {
 
   private final String id;
   private volatile int counter;

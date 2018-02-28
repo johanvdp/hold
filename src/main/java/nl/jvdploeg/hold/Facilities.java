@@ -9,10 +9,10 @@ public interface Facilities {
   Hold getHold();
 
   /** Send {@link Command} to target. */
-  <T, U extends T> CompletableFuture<Void> send(U target, Command<T> command);
+  <T, U extends T> CompletableFuture<Void> send(Id<U> target, Command<T> command);
 
   /** Send {@link Command} to target, later. */
-  <T, U extends T> CompletableFuture<Void> send(U target, Command<T> command, long delay, TimeUnit unit);
+  <T, U extends T> CompletableFuture<Void> send(Id<U> target, Command<T> command, long delay, TimeUnit unit);
 
   /**
    * Send {@link Command} to all targets implementing the {@link Service} type.
