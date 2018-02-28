@@ -29,6 +29,8 @@ public final class BarcodeScannerPanel extends JPanel implements Container, HasE
   private JTextField inputText;
   private JButton sendButton;
 
+  private InputService target;
+
   public BarcodeScannerPanel(final String id, final Executor executor) {
     this.id = id;
     this.executor = executor;
@@ -36,6 +38,7 @@ public final class BarcodeScannerPanel extends JPanel implements Container, HasE
 
   @Override
   public void cancelRequest() {
+    target = null;
     SwingUtilities.invokeLater(() -> {
       sendButton.setEnabled(false);
       inputText.setEnabled(false);
@@ -86,7 +89,8 @@ public final class BarcodeScannerPanel extends JPanel implements Container, HasE
   }
 
   @Override
-  public void requestInput() {
+  public void requestInput(final InputService theTarget) {
+    target = theTarget;
     SwingUtilities.invokeLater(() -> {
       sendButton.setEnabled(true);
       inputText.setEnabled(true);
@@ -97,6 +101,6 @@ public final class BarcodeScannerPanel extends JPanel implements Container, HasE
   private void sendInput() {
     final String input = inputText.getText();
     inputText.setText("");
-    Context.get(Facilities.class).sendAll(InputService.class, (Command<InputService>) c -> c.input(input));
+    Context.get(Facilities.class).send(target, (Command<InputService>) c -> c.input(input));
   }
 }

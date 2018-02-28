@@ -5,5 +5,5 @@ public interface RequestInputService {
 
   void cancelRequest();
 
-  void requestInput();
+  void requestInput(InputService target);
 }

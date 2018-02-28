@@ -32,6 +32,8 @@ public final class UserInterfacePanel extends JPanel implements Container, HasEx
   private JTextField enteredText;
   private JTextField receivedText;
 
+  private InputService target;
+
   public UserInterfacePanel(final String id, final Executor executor) {
     this.id = id;
     this.executor = executor;
@@ -39,6 +41,7 @@ public final class UserInterfacePanel extends JPanel implements Container, HasEx
 
   @Override
   public void cancelRequest() {
+    target = null;
     SwingUtilities.invokeLater(() -> {
       sendButton.setEnabled(false);
       enteredText.setEnabled(false);
@@ -128,7 +131,8 @@ public final class UserInterfacePanel extends JPanel implements Container, HasEx
   }
 
   @Override
-  public void requestInput() {
+  public void requestInput(final InputService theTarget) {
+    target = theTarget;
     SwingUtilities.invokeLater(() -> {
       sendButton.setEnabled(true);
       enteredText.setEnabled(true);
@@ -143,10 +147,10 @@ public final class UserInterfacePanel extends JPanel implements Container, HasEx
   private void sendInput() {
     final String input = enteredText.getText();
     enteredText.setText("");
-    Context.get(Facilities.class).sendAll(InputService.class, (Command<InputService>) c -> c.input(input));
+    Context.get(Facilities.class).send(target, (Command<InputService>) c -> c.input(input));
   }
 
   private void sendRequestInput() {
-    Context.get(Facilities.class).sendAll(RequestInputService.class, (Command<RequestInputService>) c -> c.requestInput());
+    Context.get(Facilities.class).sendAll(RequestInputService.class, (Command<RequestInputService>) c -> c.requestInput(this));
   }
 }
