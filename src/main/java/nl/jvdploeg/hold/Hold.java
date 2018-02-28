@@ -3,18 +3,21 @@ package nl.jvdploeg.hold;
 
 import java.util.List;
 
-/** Hold containing {@link Id}s. */
+/**
+ * Hold: the storage space in the hull of a ship.<br>
+ * Holds containers referenced by their {@link Id}.
+ */
 public interface Hold {
 
-  /** Add {@link Id}. */
-  void add(Id<?> container);
+  /** Add container with {@link Id}. */
+  <T> Id<T> add(Id<T> container);
 
-  /** Get {@link Id} by container id. */
-  <T extends Id<?>> T getContainer(String containerId);
+  /** Get container by {@link Id}. */
+  <T extends Id<?>> T getContainer(Id<?> id);
 
-  /** Get {@link Id}s that implement a {@link Service} type. */
+  /** Get containers that implement a {@link Service} type. */
   <T extends Id<?>> List<T> getContainers(Class<?> serviceType);
 
-  /** Remove {@link Id} by container id. */
-  <T extends Id<?>> T remove(String id);
+  /** Remove container by {@link Id}. */
+  <T extends Id<?>> T remove(Id<?> id);
 }

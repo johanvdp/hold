@@ -11,16 +11,17 @@ import org.junit.Test;
 public class TestContainerTest extends FacilitiesContextTest {
 
   private TestContainer container;
+  private Id<TestContainer> reference;
 
   @Before
   public void addContainer() {
     container = new TestContainer("container");
-    getFacilities().getHold().add(container);
+    reference = getFacilities().getHold().add(container);
   }
 
   @After
   public void removeContainer() {
-    getFacilities().getHold().remove("container");
+    getFacilities().getHold().remove(reference);
     container = null;
   }
 

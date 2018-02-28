@@ -15,18 +15,19 @@ public class TestContainerWithExecutorTest extends FacilitiesContextTest {
 
   private Executor executor;
   private TestContainerWithExecutor container;
+  private Id<TestContainer> reference;
 
   @Before
   public void addContainerWithExecutor() throws Exception {
     final ThreadFactory containerContextThreadFactory = new ContextThreadFactory("container", getFacilitiesContext());
     executor = new ScheduledThreadPoolExecutor(1, containerContextThreadFactory);
     container = new TestContainerWithExecutor("container", executor);
-    getFacilities().getHold().add(container);
+    reference = getFacilities().getHold().add(container);
   }
 
   @After
   public void removeContainerWithExecutor() throws Exception {
-    getFacilities().getHold().remove("container");
+    getFacilities().getHold().remove(reference);
     container = null;
     executor = null;
   }

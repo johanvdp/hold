@@ -14,26 +14,28 @@ import org.junit.Test;
 public class ServiceTest extends FacilitiesContextTest {
 
   private TestContainer containerA;
+  private Id<TestContainer> referenceA;
   private Executor executor;
   private TestContainerWithExecutor containerB;
+  private Id<TestContainer> referenceB;
 
   @Before
   public void addContainers() throws Exception {
     containerA = new TestContainer("a");
-    getFacilities().getHold().add(containerA);
+    referenceA = getFacilities().getHold().add(containerA);
 
     final ThreadFactory containerContextThreadFactory = new ContextThreadFactory("b", getFacilitiesContext());
     executor = new ScheduledThreadPoolExecutor(1, containerContextThreadFactory);
     containerB = new TestContainerWithExecutor("b", executor);
-    getFacilities().getHold().add(containerB);
+    referenceB = getFacilities().getHold().add(containerB);
   }
 
   @After
   public void removeContainers() throws Exception {
-    getFacilities().getHold().remove("a");
+    getFacilities().getHold().remove(referenceA);
     containerA = null;
 
-    getFacilities().getHold().remove("b");
+    getFacilities().getHold().remove(referenceB);
     containerB = null;
     executor = null;
   }

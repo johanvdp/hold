@@ -25,22 +25,24 @@ public final class Memory implements Hold {
   }
 
   @Override
-  public synchronized void add(final Id<?> container) {
+  public synchronized <T> Id<T> add(final Id<T> container) {
     Checks.ARGUMENT.notNull(container, "container");
     addContainer(container);
     addServices(container);
+    return container;
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public synchronized <T extends Id<?>> T getContainer(final String containerId) {
-    Checks.ARGUMENT.notNull(containerId, "containerId");
-    final T container = (T) containers.get(containerId);
+  public synchronized <T extends Id<?>> T getContainer(final Id<?> id) {
+    Checks.ARGUMENT.notNull(id, "id");
+    Checks.ARGUMENT.notNull(id.getId(), "id.id");
+    final T container = (T) containers.get(id.getId());
     if (container == null) {
       throw new IllegalArgumentExceptionBuilder() //
           .method("get") //
           .message("hold does not contain") //
-          .field("container", containerId) //
+          .field("id", id.getId()) //
           .build();
     }
     return container;
@@ -64,7 +66,7 @@ public final class Memory implements Hold {
 
   @SuppressWarnings("unchecked")
   @Override
-  public synchronized <T extends Id<?>> T remove(final String id) {
+  public synchronized <T extends Id<?>> T remove(final Id<?> id) {
     Checks.ARGUMENT.notNull(id, "id");
     final T container = (T) removeContainer(id);
     removeServices(container);
@@ -72,7 +74,6 @@ public final class Memory implements Hold {
   }
 
   private void addContainer(final Id<?> container) {
-    Checks.ARGUMENT.notNull(container, "container");
     final String id = container.getId();
     Checks.ARGUMENT.notNull(id, "container.id");
     if (containers.containsKey(id)) {
@@ -103,13 +104,14 @@ public final class Memory implements Hold {
     return list;
   }
 
-  private Id<?> removeContainer(final String id) {
-    final Id<?> container = containers.remove(id);
+  private Id<?> removeContainer(final Id<?> id) {
+    Checks.ARGUMENT.notNull(id.getId(), "id.id");
+    final Id<?> container = containers.remove(id.getId());
     if (container == null) {
       throw new IllegalStateExceptionBuilder() //
           .method("removeContainer") //
           .message("hold does not contain") //
-          .field("container.id", id) //
+          .field("id", id.getId()) //
           .build();
     }
     return container;

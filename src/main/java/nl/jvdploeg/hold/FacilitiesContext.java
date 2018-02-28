@@ -48,7 +48,7 @@ public final class FacilitiesContext extends Context<Facilities> implements Faci
   public <T, U extends T> CompletableFuture<Void> send(final Id<U> id, final Command<T> command) {
     Checks.ARGUMENT.notNull(id, "id");
     Checks.ARGUMENT.notNull(command, "command");
-    final U container = hold.getContainer(id.getId());
+    final U container = hold.getContainer(id);
     final Executor executor = getExecutor(container);
     final RunnableCommand<T> runnableCommand = new RunnableCommand<>(container, command);
     final CompletableFuture<Void> future = CompletableFuture.runAsync(runnableCommand, executor);
@@ -61,7 +61,7 @@ public final class FacilitiesContext extends Context<Facilities> implements Faci
     Checks.ARGUMENT.notNull(command, "command");
     Checks.ARGUMENT.ge(Long.valueOf(delay), "delay", Long.valueOf(0L));
     Checks.ARGUMENT.notNull(unit, "unit");
-    final U container = hold.getContainer(id.getId());
+    final U container = hold.getContainer(id);
     final Executor executor = getExecutor(container);
     final RunnableCommand<T> runnableCommand = new RunnableCommand<>(container, command);
     final CompletableFuture<Void> future = CompletableFuture.runAsync(runnableCommand, CompletableFuture.delayedExecutor(delay, unit, executor));

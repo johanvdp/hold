@@ -12,11 +12,11 @@ public class MemoryTest {
     final TestContainer cargoA = new TestContainer("a");
     final TestContainer cargoB = new TestContainer("b");
     // when
-    hold.add(cargoA);
-    hold.add(cargoB);
+    final Id<TestContainer> referenceA = hold.add(cargoA);
+    final Id<TestContainer> referenceB = hold.add(cargoB);
     // then
-    Assert.assertEquals(cargoA, hold.getContainer(cargoA.getId()));
-    Assert.assertEquals(cargoB, hold.getContainer(cargoB.getId()));
+    Assert.assertEquals(cargoA, hold.getContainer(referenceA));
+    Assert.assertEquals(cargoB, hold.getContainer(referenceB));
   }
 
   @Test
@@ -25,9 +25,9 @@ public class MemoryTest {
     final Memory hold = new Memory();
     // when
     final TestContainer cargo = new TestContainer("a");
-    hold.add(cargo);
+    final Id<TestContainer> referenceA = hold.add(cargo);
     // then
-    Assert.assertEquals(cargo, hold.getContainer("a"));
+    Assert.assertEquals(cargo, hold.getContainer(referenceA));
   }
 
   @Test
@@ -35,13 +35,13 @@ public class MemoryTest {
     // given
     final Memory hold = new Memory();
     final TestContainer cargoA = new TestContainer("a");
-    hold.add(cargoA);
+    final Id<TestContainer> referenceA = hold.add(cargoA);
     // when
-    final TestContainer removed = hold.remove("a");
+    final TestContainer removed = hold.remove(referenceA);
     // then
     Assert.assertEquals(cargoA, removed);
     try {
-      hold.getContainer("a");
+      hold.getContainer(referenceA);
       Assert.fail("failed to remove");
     } catch (final Exception e) {
     }
