@@ -3,7 +3,7 @@ package nl.jvdploeg.hold.demo;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.beans.PropertyChangeListener;
+import java.util.concurrent.Executor;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -13,28 +13,47 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 
 import nl.jvdploeg.context.Context;
+import nl.jvdploeg.hold.Command;
+import nl.jvdploeg.hold.Container;
 import nl.jvdploeg.hold.Facilities;
+import nl.jvdploeg.hold.HasExecutor;
+import nl.jvdploeg.hold.Service;
 
-public final class UserInterfacePanel extends JPanel {
+@Service(type = RequestInputService.class)
+@Service(type = InputService.class)
+public final class UserInterfacePanel extends JPanel implements Container, HasExecutor, RequestInputService, InputService {
 
   private static final long serialVersionUID = 1L;
 
-  private final UserInterface userInterface;
+  private final String id;
+  private final Executor executor;
   private JButton requestButton;
   private JButton sendButton;
   private JTextField enteredText;
   private JTextField receivedText;
-  private final PropertyChangeListener listener = ev -> {
-    final String propertyName = ev.getPropertyName();
-    if (UserInterface.PROPERTY_REQUEST.equals(propertyName)) {
-      onRequest(((Boolean) ev.getNewValue()).booleanValue());
-    } else if (UserInterface.PROPERTY_INPUT.equals(propertyName)) {
-      onInput((String) ev.getNewValue());
-    }
-  };
 
-  public UserInterfacePanel(final UserInterface userInterface) {
-    this.userInterface = userInterface;
+  public UserInterfacePanel(final String id, final Executor executor) {
+    this.id = id;
+    this.executor = executor;
+  }
+
+  @Override
+  public void cancelRequest() {
+    SwingUtilities.invokeLater(() -> {
+      sendButton.setEnabled(false);
+      enteredText.setEnabled(false);
+      enteredText.setText("");
+    });
+  }
+
+  @Override
+  public Executor getExecutor() {
+    return executor;
+  }
+
+  @Override
+  public String getId() {
+    return id;
   }
 
   public void initialize() {
@@ -67,7 +86,7 @@ public final class UserInterfacePanel extends JPanel {
     gbc.weighty = 0.0d;
     gbc.fill = GridBagConstraints.HORIZONTAL;
     requestButton = new JButton("Request");
-    requestButton.addActionListener(a -> sendRequest());
+    requestButton.addActionListener(a -> sendRequestInput());
     add(requestButton, gbc);
 
     gbc.gridx = 0;
@@ -98,33 +117,36 @@ public final class UserInterfacePanel extends JPanel {
     sendButton.setEnabled(false);
     sendButton.addActionListener(a -> sendInput());
     add(sendButton, gbc);
-
-    Context.get(Facilities.class).send(userInterface, c -> c.addPropertyChangeListener(listener));
   }
 
-  private void onInput(final String newValue) {
+  @Override
+  public void input(final String input) {
     SwingUtilities.invokeLater(() -> {
-      receivedText.setText(newValue);
+      receivedText.setText(input);
+    });
+    sendCancelRequest();
+  }
+
+  @Override
+  public void requestInput() {
+    SwingUtilities.invokeLater(() -> {
+      sendButton.setEnabled(true);
+      enteredText.setEnabled(true);
+      enteredText.setText("");
     });
   }
 
-  private void onRequest(final boolean request) {
-    SwingUtilities.invokeLater(() -> {
-      sendButton.setEnabled(request);
-      enteredText.setEnabled(request);
-      if (!request) {
-        enteredText.setText("");
-      }
-    });
+  private void sendCancelRequest() {
+    Context.get(Facilities.class).sendAll(RequestInputService.class, (Command<RequestInputService>) c -> c.cancelRequest());
   }
 
   private void sendInput() {
     final String input = enteredText.getText();
     enteredText.setText("");
-    Context.get(Facilities.class).send(userInterface, c -> c.send(input));
+    Context.get(Facilities.class).sendAll(InputService.class, (Command<InputService>) c -> c.input(input));
   }
 
-  private void sendRequest() {
-    Context.get(Facilities.class).send(userInterface, c -> c.sendRequest());
+  private void sendRequestInput() {
+    Context.get(Facilities.class).sendAll(RequestInputService.class, (Command<RequestInputService>) c -> c.requestInput());
   }
 }

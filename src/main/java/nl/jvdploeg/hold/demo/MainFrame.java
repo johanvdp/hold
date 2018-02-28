@@ -10,12 +10,12 @@ public final class MainFrame extends JFrame {
 
   private static final long serialVersionUID = 1L;
 
-  private final UserInterface userInterface;
-  private final BarcodeScanner barcodeScanner;
+  private final UserInterfacePanel userInterfacePanel;
+  private final BarcodeScannerPanel barcodeScannerPanel;
 
-  public MainFrame(final UserInterface userInterface, final BarcodeScanner barcodeScanner) {
-    this.userInterface = userInterface;
-    this.barcodeScanner = barcodeScanner;
+  public MainFrame(final UserInterfacePanel userInterfacePanel, final BarcodeScannerPanel barcodeScannerPanel) {
+    this.userInterfacePanel = userInterfacePanel;
+    this.barcodeScannerPanel = barcodeScannerPanel;
   }
 
   public void initialize() {
@@ -29,7 +29,6 @@ public final class MainFrame extends JFrame {
     gbc.weightx = 1.0d;
     gbc.weighty = 1.0d;
     gbc.fill = GridBagConstraints.BOTH;
-    final UserInterfacePanel userInterfacePanel = new UserInterfacePanel(userInterface);
     userInterfacePanel.initialize();
     add(userInterfacePanel, gbc);
 
@@ -39,7 +38,6 @@ public final class MainFrame extends JFrame {
     gbc.weightx = 1.0d;
     gbc.weighty = 1.0d;
     gbc.fill = GridBagConstraints.BOTH;
-    final BarcodeScannerPanel barcodeScannerPanel = new BarcodeScannerPanel(barcodeScanner);
     barcodeScannerPanel.initialize();
     add(barcodeScannerPanel, gbc);
 

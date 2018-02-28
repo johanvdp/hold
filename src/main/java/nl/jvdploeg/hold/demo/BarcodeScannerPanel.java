@@ -3,7 +3,7 @@ package nl.jvdploeg.hold.demo;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.beans.PropertyChangeListener;
+import java.util.concurrent.Executor;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -13,25 +13,44 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 
 import nl.jvdploeg.context.Context;
+import nl.jvdploeg.hold.Command;
+import nl.jvdploeg.hold.Container;
 import nl.jvdploeg.hold.Facilities;
+import nl.jvdploeg.hold.HasExecutor;
+import nl.jvdploeg.hold.Service;
 
-public final class BarcodeScannerPanel extends JPanel {
+@Service(type = RequestInputService.class)
+public final class BarcodeScannerPanel extends JPanel implements Container, HasExecutor, RequestInputService {
 
   private static final long serialVersionUID = 1L;
 
-  private final BarcodeScanner barcodeScanner;
+  private final String id;
+  private final Executor executor;
   private JTextField inputText;
   private JButton sendButton;
 
-  private final PropertyChangeListener listener = ev -> {
-    final String propertyName = ev.getPropertyName();
-    if (BarcodeScanner.PROPERTY_REQUEST.equals(propertyName)) {
-      onRequest(((Boolean) ev.getNewValue()).booleanValue());
-    }
-  };
+  public BarcodeScannerPanel(final String id, final Executor executor) {
+    this.id = id;
+    this.executor = executor;
+  }
 
-  public BarcodeScannerPanel(final BarcodeScanner barcodeScanner) {
-    this.barcodeScanner = barcodeScanner;
+  @Override
+  public void cancelRequest() {
+    SwingUtilities.invokeLater(() -> {
+      sendButton.setEnabled(false);
+      inputText.setEnabled(false);
+      inputText.setText("");
+    });
+  }
+
+  @Override
+  public Executor getExecutor() {
+    return executor;
+  }
+
+  @Override
+  public String getId() {
+    return id;
   }
 
   public void initialize() {
@@ -64,23 +83,20 @@ public final class BarcodeScannerPanel extends JPanel {
     sendButton.setEnabled(false);
     sendButton.addActionListener(a -> sendInput());
     add(sendButton, gbc);
-
-    Context.get(Facilities.class).send(barcodeScanner, c -> c.addPropertyChangeListener(listener));
   }
 
-  private void onRequest(final boolean request) {
+  @Override
+  public void requestInput() {
     SwingUtilities.invokeLater(() -> {
-      sendButton.setEnabled(request);
-      inputText.setEnabled(request);
-      if (!request) {
-        inputText.setText("");
-      }
+      sendButton.setEnabled(true);
+      inputText.setEnabled(true);
+      inputText.setText("");
     });
   }
 
   private void sendInput() {
     final String input = inputText.getText();
     inputText.setText("");
-    Context.get(Facilities.class).send(barcodeScanner, c -> c.send(input));
+    Context.get(Facilities.class).sendAll(InputService.class, (Command<InputService>) c -> c.input(input));
   }
 }

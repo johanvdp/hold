@@ -20,10 +20,10 @@ public class Application {
     application.start();
   }
 
-  private static BarcodeScanner createBarcodeScanner(final FacilitiesContext facilitiesContext) {
+  private static BarcodeScannerPanel createBarcodeScanner(final FacilitiesContext facilitiesContext) {
     final ContextThreadFactory threadFactory = new ContextThreadFactory("scanner", facilitiesContext);
     final Executor executor = new ScheduledThreadPoolExecutor(1, threadFactory);
-    final BarcodeScanner scanner = new BarcodeScanner("barcodeScanner", executor);
+    final BarcodeScannerPanel scanner = new BarcodeScannerPanel("barcodeScanner", executor);
     facilitiesContext.getHold().add(scanner);
     return scanner;
   }
@@ -39,10 +39,10 @@ public class Application {
     return facilitiesContext;
   }
 
-  private static UserInterface createUserInterface(final FacilitiesContext facilitiesContext) {
+  private static UserInterfacePanel createUserInterface(final FacilitiesContext facilitiesContext) {
     final ContextThreadFactory threadFactory = new ContextThreadFactory("userInterface", facilitiesContext);
     final Executor executor = new ScheduledThreadPoolExecutor(1, threadFactory);
-    final UserInterface userInterface = new UserInterface("userInterface", executor);
+    final UserInterfacePanel userInterface = new UserInterfacePanel("userInterface", executor);
     facilitiesContext.getHold().add(userInterface);
     return userInterface;
   }
@@ -52,8 +52,8 @@ public class Application {
 
   private void start() {
     final FacilitiesContext facilitiesContext = createFacilitiesContext();
-    final BarcodeScanner barcodeScanner = createBarcodeScanner(facilitiesContext);
-    final UserInterface userInterface = createUserInterface(facilitiesContext);
+    final BarcodeScannerPanel barcodeScanner = createBarcodeScanner(facilitiesContext);
+    final UserInterfacePanel userInterface = createUserInterface(facilitiesContext);
 
     final MainFrame mainFrame = new MainFrame(userInterface, barcodeScanner);
     // give AWT thread facilities context
