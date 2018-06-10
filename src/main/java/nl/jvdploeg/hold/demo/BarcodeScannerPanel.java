@@ -27,6 +27,7 @@ public final class BarcodeScannerPanel extends JPanel implements Id<BarcodeScann
   private final String id;
   private final Executor executor;
   private JTextField inputText;
+  private JTextField messageText;
   private JButton sendButton;
 
   private Id<? extends InputService> target;
@@ -37,12 +38,12 @@ public final class BarcodeScannerPanel extends JPanel implements Id<BarcodeScann
   }
 
   @Override
-  public void cancelRequest() {
+  public void end(final Request request) {
     target = null;
     SwingUtilities.invokeLater(() -> {
       sendButton.setEnabled(false);
-      inputText.setEnabled(false);
       inputText.setText("");
+      messageText.setText("");
     });
   }
 
@@ -61,15 +62,32 @@ public final class BarcodeScannerPanel extends JPanel implements Id<BarcodeScann
     setLayout(new GridBagLayout());
     final GridBagConstraints gbc = new GridBagConstraints();
 
+    // row: message
     gbc.gridx = 0;
     gbc.gridy = 0;
     gbc.weightx = 0.0d;
     gbc.weighty = 0.0d;
     gbc.fill = GridBagConstraints.NONE;
-    add(new JLabel("scanned:"), gbc);
+    add(new JLabel("message:"), gbc);
 
     gbc.gridx = 1;
-    gbc.gridy = 0;
+    gbc.weightx = 1.0d;
+    gbc.weighty = 0.0d;
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+    messageText = new JTextField(10);
+    messageText.setEnabled(true);
+    messageText.setEditable(false);
+    add(messageText, gbc);
+
+    // row: input
+    gbc.gridx = 0;
+    gbc.gridy++;
+    gbc.weightx = 0.0d;
+    gbc.weighty = 0.0d;
+    gbc.fill = GridBagConstraints.NONE;
+    add(new JLabel("input:"), gbc);
+
+    gbc.gridx = 1;
     gbc.weightx = 1.0d;
     gbc.weighty = 0.0d;
     gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -78,7 +96,6 @@ public final class BarcodeScannerPanel extends JPanel implements Id<BarcodeScann
     add(inputText, gbc);
 
     gbc.gridx = 2;
-    gbc.gridy = 0;
     gbc.weightx = 0.0d;
     gbc.weighty = 0.0d;
     gbc.fill = GridBagConstraints.NONE;
@@ -89,18 +106,20 @@ public final class BarcodeScannerPanel extends JPanel implements Id<BarcodeScann
   }
 
   @Override
-  public void requestInput(final Id<? extends InputService> theTarget) {
-    target = theTarget;
+  public void begin(final Request newRequest) {
+    target = newRequest.getTarget();
+    final String requestMessage = Application.translate(newRequest.getMessage());
     SwingUtilities.invokeLater(() -> {
       sendButton.setEnabled(true);
       inputText.setEnabled(true);
       inputText.setText("");
+      messageText.setText(requestMessage);
     });
   }
 
   private void sendInput() {
     final String input = inputText.getText();
     inputText.setText("");
-    Context.get(Facilities.class).send(target, (Command<InputService>) c -> c.input(input));
+    Context.get(Facilities.class).send(target, (Command<InputService>) c -> c.input(this, input));
   }
 }

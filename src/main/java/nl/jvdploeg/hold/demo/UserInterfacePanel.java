@@ -18,10 +18,100 @@ import nl.jvdploeg.hold.Facilities;
 import nl.jvdploeg.hold.HasExecutor;
 import nl.jvdploeg.hold.Id;
 import nl.jvdploeg.hold.Service;
+import nl.jvdploeg.message.MessageBuilder;
 
-@Service(type = RequestInputService.class)
-@Service(type = InputService.class)
-public final class UserInterfacePanel extends JPanel implements Id<UserInterfacePanel>, HasExecutor, RequestInputService, InputService {
+public final class UserInterfacePanel extends JPanel {
+
+  @Service(type = InputService.class)
+  private final class Input implements Id<Input>, HasExecutor, InputService {
+
+    private Input() {
+    }
+
+    @Override
+    public Executor getExecutor() {
+      return executor;
+    }
+
+    @Override
+    public String getId() {
+      return id + ".input";
+    }
+
+    @Override
+    public void input(final Id<? extends RequestInputService> source, final String theInput) {
+      SwingUtilities.invokeLater(() -> {
+        inputText.setText(source.getId() + ":" + theInput);
+      });
+      sendCancelRequest();
+    }
+
+  }
+
+  @Service(type = InputService.class)
+  private final class Message implements Id<Input>, HasExecutor, InputService {
+
+    private Message() {
+    }
+
+    @Override
+    public Executor getExecutor() {
+      return executor;
+    }
+
+    @Override
+    public String getId() {
+      return id + ".message";
+    }
+
+    @Override
+    public void input(final Id<? extends RequestInputService> source, final String theInput) {
+      SwingUtilities.invokeLater(() -> {
+        messageText.setText(source.getId() + ":" + theInput);
+      });
+    }
+  }
+
+  @Service(type = RequestInputService.class)
+  private final class RequestInput implements Id<RequestInput>, HasExecutor, RequestInputService {
+
+    private RequestInput() {
+    }
+
+    @Override
+    public Executor getExecutor() {
+      return executor;
+    }
+
+    @Override
+    public String getId() {
+      return id + ".requestInput";
+    }
+
+    @Override
+    public void begin(final Request newRequest) {
+      target = newRequest.getTarget();
+      final String requestMessage = Application.translate(newRequest.getMessage());
+      SwingUtilities.invokeLater(() -> {
+        sendButton.setEnabled(true);
+        enteredText.setEnabled(true);
+        enteredText.setText("");
+        messageText.setText(requestMessage);
+      });
+    }
+
+    @Override
+    public void end(final Request newRequest) {
+      target = null;
+      SwingUtilities.invokeLater(() -> {
+        sendButton.setEnabled(false);
+        enteredText.setEnabled(false);
+        enteredText.setText("");
+        messageText.setText("");
+      });
+    }
+
+  }
 
   private static final long serialVersionUID = 1L;
 
@@ -30,60 +120,79 @@ public final class UserInterfacePanel extends JPanel implements Id<UserInterface
   private JButton requestButton;
   private JButton sendButton;
   private JTextField enteredText;
-  private JTextField receivedText;
-
+  private JTextField inputText;
+  private JTextField messageText;
   private Id<? extends InputService> target;
+  private final Input input = new Input();
+  private final Message message = new Message();
+  private final RequestInput requestInput = new RequestInput();
+
+  private Request request;
 
   public UserInterfacePanel(final String id, final Executor executor) {
     this.id = id;
     this.executor = executor;
   }
 
-  @Override
-  public void cancelRequest() {
-    target = null;
-    SwingUtilities.invokeLater(() -> {
-      sendButton.setEnabled(false);
-      enteredText.setEnabled(false);
-      enteredText.setText("");
-    });
+  private void sendInput() {
+    final String text = enteredText.getText();
+    enteredText.setText("");
+    Context.get(Facilities.class).send(target, (Command<InputService>) c -> c.input(requestInput, text));
   }
 
-  @Override
-  public Executor getExecutor() {
-    return executor;
+  private void sendCancelRequest() {
+    Context.get(Facilities.class).sendAll(RequestInputService.class, (Command<RequestInputService>) c -> c.end(request));
   }
 
-  @Override
-  public String getId() {
-    return id;
+  private void sendRequestInput() {
+    final nl.jvdploeg.message.Message requestMessage = new MessageBuilder("userInterface.request").build();
+    request = Request.createRequest(input, Request.Priority.NORMAL, requestMessage);
+    Context.get(Facilities.class).sendAll(RequestInputService.class, (Command<RequestInputService>) c -> c.begin(request));
   }
 
   public void initialize() {
+
     setBorder(new TitledBorder("User interface"));
     setLayout(new GridBagLayout());
     final GridBagConstraints gbc = new GridBagConstraints();
 
+    // row: message
     gbc.gridx = 0;
     gbc.gridy = 0;
     gbc.gridwidth = 1;
     gbc.weightx = 0.0d;
     gbc.weighty = 0.0d;
     gbc.fill = GridBagConstraints.HORIZONTAL;
-    add(new JLabel("received:"), gbc);
+    add(new JLabel("message:"), gbc);
 
     gbc.gridx = 1;
-    gbc.gridy = 0;
     gbc.gridwidth = 1;
     gbc.weightx = 1.0d;
     gbc.weighty = 0.0d;
     gbc.fill = GridBagConstraints.HORIZONTAL;
-    receivedText = new JTextField(20);
-    receivedText.setEditable(false);
-    add(receivedText, gbc);
+    messageText = new JTextField(20);
+    messageText.setEditable(false);
+    add(messageText, gbc);
+
+    // row: input
+    gbc.gridx = 0;
+    gbc.gridy++;
+    gbc.gridwidth = 1;
+    gbc.weightx = 0.0d;
+    gbc.weighty = 0.0d;
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+    add(new JLabel("input:"), gbc);
+
+    gbc.gridx = 1;
+    gbc.gridwidth = 1;
+    gbc.weightx = 1.0d;
+    gbc.weighty = 0.0d;
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+    inputText = new JTextField(20);
+    inputText.setEditable(false);
+    add(inputText, gbc);
 
     gbc.gridx = 2;
-    gbc.gridy = 0;
     gbc.gridwidth = 1;
     gbc.weightx = 0.0d;
     gbc.weighty = 0.0d;
@@ -92,16 +201,16 @@ public final class UserInterfacePanel extends JPanel implements Id<UserInterface
     requestButton.addActionListener(a -> sendRequestInput());
     add(requestButton, gbc);
 
+    // row: data entry
     gbc.gridx = 0;
-    gbc.gridy = 1;
+    gbc.gridy++;
     gbc.gridwidth = 1;
     gbc.weightx = 0.0d;
     gbc.weighty = 0.0d;
     gbc.fill = GridBagConstraints.HORIZONTAL;
-    add(new JLabel("entered:"), gbc);
+    add(new JLabel("enter:"), gbc);
 
     gbc.gridx = 1;
-    gbc.gridy = 1;
     gbc.gridwidth = 1;
     gbc.weightx = 1.0d;
     gbc.weighty = 0.0d;
@@ -111,7 +220,6 @@ public final class UserInterfacePanel extends JPanel implements Id<UserInterface
     add(enteredText, gbc);
 
     gbc.gridx = 2;
-    gbc.gridy = 1;
     gbc.gridwidth = 1;
     gbc.weightx = 0.0d;
     gbc.weighty = 0.0d;
@@ -120,37 +228,9 @@ public final class UserInterfacePanel extends JPanel implements Id<UserInterface
     sendButton.setEnabled(false);
     sendButton.addActionListener(a -> sendInput());
     add(sendButton, gbc);
-  }
 
-  @Override
-  public void input(final String input) {
-    SwingUtilities.invokeLater(() -> {
-      receivedText.setText(input);
-    });
-    sendCancelRequest();
-  }
-
-  @Override
-  public void requestInput(final Id<? extends InputService> theTarget) {
-    target = theTarget;
-    SwingUtilities.invokeLater(() -> {
-      sendButton.setEnabled(true);
-      enteredText.setEnabled(true);
-      enteredText.setText("");
-    });
-  }
-
-  private void sendCancelRequest() {
-    Context.get(Facilities.class).sendAll(RequestInputService.class, (Command<RequestInputService>) c -> c.cancelRequest());
-  }
-
-  private void sendInput() {
-    final String input = enteredText.getText();
-    enteredText.setText("");
-    Context.get(Facilities.class).send(target, (Command<InputService>) c -> c.input(input));
-  }
-
-  private void sendRequestInput() {
-    Context.get(Facilities.class).sendAll(RequestInputService.class, (Command<RequestInputService>) c -> c.requestInput(this));
+    Context.get(Facilities.class).getHold().add(input);
+    Context.get(Facilities.class).getHold().add(message);
+    Context.get(Facilities.class).getHold().add(requestInput);
   }
 }

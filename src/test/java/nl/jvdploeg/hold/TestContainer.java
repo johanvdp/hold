@@ -1,10 +1,12 @@
 package nl.jvdploeg.hold;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 @Service(type = Sensor.class)
 public class TestContainer implements Id<TestContainer>, Sensor {
 
   private final String id;
-  private volatile int counter;
+  private final AtomicInteger counter = new AtomicInteger(0);
   private String touchedBy;
   private String[] parameters;
 
@@ -28,7 +30,7 @@ public class TestContainer implements Id<TestContainer>, Sensor {
 
   @Override
   public final int getTouchCount() {
-    return counter;
+    return counter.get();
   }
 
   public final void methodWithParameters(final String[] theParameters) {
@@ -37,7 +39,7 @@ public class TestContainer implements Id<TestContainer>, Sensor {
 
   @Override
   public final void touch() {
-    counter++;
+    counter.incrementAndGet();
     touchedBy = Thread.currentThread().getName();
   }
 }
