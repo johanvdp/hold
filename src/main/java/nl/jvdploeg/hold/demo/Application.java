@@ -16,11 +16,11 @@ import nl.jvdploeg.hold.FacilitiesContext;
 import nl.jvdploeg.hold.Hold;
 import nl.jvdploeg.hold.Id;
 import nl.jvdploeg.hold.Memory;
-import nl.jvdploeg.message.MessageBundle;
+import nl.jvdploeg.message.ResourceMessageBundle;
 
 public class Application {
 
-  public static final Id<MessageBundle> MESSAGE_BUNDLE_ID = () -> "messageBundle";
+  public static final Id<ResourceMessageBundle> MESSAGE_BUNDLE_ID = () -> "messageBundle";
 
   public static void main(final String[] args) {
     final Application application = new Application();
@@ -80,16 +80,16 @@ public class Application {
     });
   }
 
-  private static UniversalContainer<MessageBundle> createMessageBundle(final FacilitiesContext facilitiesContext) {
+  private static UniversalContainer<ResourceMessageBundle> createMessageBundle(final FacilitiesContext facilitiesContext) {
     final ResourceBundle resourceBundle = ResourceBundle.getBundle("nl.jvdploeg.hold.demo.ApplicationBundle");
-    final MessageBundle messageBundle = new MessageBundle(resourceBundle);
-    final UniversalContainer<MessageBundle> messageBundleContainer = new UniversalContainer<>(MESSAGE_BUNDLE_ID.getId(), messageBundle);
+    final ResourceMessageBundle messageBundle = new ResourceMessageBundle(resourceBundle);
+    final UniversalContainer<ResourceMessageBundle> messageBundleContainer = new UniversalContainer<>(MESSAGE_BUNDLE_ID.getId(), messageBundle);
     facilitiesContext.getHold().add(messageBundleContainer);
     return messageBundleContainer;
   }
 
   public static String translate(final nl.jvdploeg.message.Message message) {
-    final UniversalContainer<MessageBundle> container = Context.get(Facilities.class).getHold().getContainer(MESSAGE_BUNDLE_ID);
+    final UniversalContainer<ResourceMessageBundle> container = Context.get(Facilities.class).getHold().getContainer(MESSAGE_BUNDLE_ID);
     return container.getContent().translate(message);
   }
 }

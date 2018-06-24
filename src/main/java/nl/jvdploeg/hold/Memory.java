@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.jvdploeg.exception.Checks;
-import nl.jvdploeg.exception.IllegalArgumentExceptionBuilder;
-import nl.jvdploeg.exception.IllegalStateExceptionBuilder;
+import nl.jvdploeg.exception.ThrowableBuilder;
 
 /**
  * In-memory implementation of {@link Hold}.
@@ -39,7 +38,7 @@ public final class Memory implements Hold {
     Checks.ARGUMENT.notNull(id.getId(), "id.id");
     final T container = (T) containers.get(id.getId());
     if (container == null) {
-      throw new IllegalArgumentExceptionBuilder() //
+      throw ThrowableBuilder.createIllegalStateExceptionBuilder() //
           .method("get") //
           .message("hold does not contain") //
           .field("id", id.getId()) //
@@ -54,7 +53,7 @@ public final class Memory implements Hold {
     Checks.ARGUMENT.notNull(serviceType, "serviceType");
     final List<T> list = (List<T>) services.get(serviceType);
     if (list == null) {
-      throw new IllegalStateExceptionBuilder() //
+      throw ThrowableBuilder.createIllegalStateExceptionBuilder() //
           .method("getContainers") //
           .message("hold does not contain") //
           .field("serviceType", serviceType.toString()) //
@@ -77,7 +76,7 @@ public final class Memory implements Hold {
     final String id = container.getId();
     Checks.ARGUMENT.notNull(id, "container.id");
     if (containers.containsKey(id)) {
-      throw new IllegalArgumentExceptionBuilder() //
+      throw ThrowableBuilder.createIllegalStateExceptionBuilder() //
           .method("addContainer") //
           .message("hold already contains") //
           .field("container", id) //
@@ -108,7 +107,7 @@ public final class Memory implements Hold {
     Checks.ARGUMENT.notNull(id.getId(), "id.id");
     final Id<?> container = containers.remove(id.getId());
     if (container == null) {
-      throw new IllegalStateExceptionBuilder() //
+      throw ThrowableBuilder.createIllegalStateExceptionBuilder() //
           .method("removeContainer") //
           .message("hold does not contain") //
           .field("id", id.getId()) //
@@ -124,7 +123,7 @@ public final class Memory implements Hold {
       final List<Id<?>> list = services.get(serviceType);
       final boolean removed = list.remove(container);
       if (!removed) {
-        throw new IllegalStateExceptionBuilder() //
+        throw ThrowableBuilder.createIllegalStateExceptionBuilder() //
             .method("removeService") //
             .message("hold does not contain") //
             .field("service.type", serviceType.toString()) //

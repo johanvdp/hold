@@ -21,6 +21,7 @@ import nl.jvdploeg.hold.demo.Request.Priority;
 import nl.jvdploeg.hold.demo.RequestInputRecorder.RecordedRequest;
 import nl.jvdploeg.hold.demo.RequestInputRecorder.RequestType;
 import nl.jvdploeg.message.MessageBuilder;
+import nl.jvdploeg.message.MessageDefinition;
 
 /**
  * Test {@link RequestQueue}.<br>
@@ -82,9 +83,9 @@ public class RequestQueueTest {
     targetId = facilitiesContext.getHold().add(target);
     queue = new RequestQueue("queue", targetId);
     queueId = facilitiesContext.getHold().add(queue);
-    high = Request.createRequest(sourceId, Priority.HIGH, new MessageBuilder("key").build());
-    normal = Request.createRequest(sourceId, Priority.NORMAL, new MessageBuilder("key").build());
-    low = Request.createRequest(sourceId, Priority.LOW, new MessageBuilder("key").build());
+    high = Request.createRequest(sourceId, Priority.HIGH, new MessageBuilder(new MessageDefinition("key")).build());
+    normal = Request.createRequest(sourceId, Priority.NORMAL, new MessageBuilder(new MessageDefinition("key")).build());
+    low = Request.createRequest(sourceId, Priority.LOW, new MessageBuilder(new MessageDefinition("key")).build());
   }
 
   private void test(final String send, final String expect) throws Exception {

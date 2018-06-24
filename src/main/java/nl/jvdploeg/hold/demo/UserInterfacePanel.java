@@ -19,6 +19,7 @@ import nl.jvdploeg.hold.HasExecutor;
 import nl.jvdploeg.hold.Id;
 import nl.jvdploeg.hold.Service;
 import nl.jvdploeg.message.MessageBuilder;
+import nl.jvdploeg.message.MessageDefinition;
 
 public final class UserInterfacePanel extends JPanel {
 
@@ -145,7 +146,7 @@ public final class UserInterfacePanel extends JPanel {
   }
 
   private void sendRequestInput() {
-    final nl.jvdploeg.message.Message requestMessage = new MessageBuilder("userInterface.request").build();
+    final nl.jvdploeg.message.Message requestMessage = new MessageBuilder(new MessageDefinition("userInterface.request")).build();
     request = Request.createRequest(input, Request.Priority.NORMAL, requestMessage);
     Context.get(Facilities.class).sendAll(RequestInputService.class, (Command<RequestInputService>) c -> c.begin(request));
   }

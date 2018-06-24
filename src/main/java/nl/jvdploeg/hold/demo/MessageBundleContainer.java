@@ -2,14 +2,14 @@
 package nl.jvdploeg.hold.demo;
 
 import nl.jvdploeg.hold.Id;
-import nl.jvdploeg.message.MessageBundle;
+import nl.jvdploeg.message.ResourceMessageBundle;
 
 public final class MessageBundleContainer implements Id<MessageBundleContainer> {
 
   private final String id;
-  private final MessageBundle messageBundle;
+  private final ResourceMessageBundle messageBundle;
 
-  public MessageBundleContainer(final String id, final MessageBundle messageBundle) {
+  public MessageBundleContainer(final String id, final ResourceMessageBundle messageBundle) {
     this.id = id;
     this.messageBundle = messageBundle;
 
@@ -20,7 +20,7 @@ public final class MessageBundleContainer implements Id<MessageBundleContainer> 
     return id;
   }
 
-  public MessageBundle getMessageBundle() {
+  public ResourceMessageBundle getMessageBundle() {
     return messageBundle;
   }
 }
